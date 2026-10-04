@@ -30,4 +30,13 @@ class BooktrackTests(unittest.TestCase):
         with self.assertRaises(SystemExit): self.run_cli("update","1")
         self.assertEqual(load(self.path)["books"][0]["current_page"],0)
 
+    def test_malformed_book_data_is_rejected_before_commands_run(self):
+        self.path.write_text(json.dumps({"version": 1, "books": [{"id": 1, "title": "书", "author": "作者", "pages": 10, "current_page": 11, "status": "在读", "rating": None, "notes": "", "added": "2024-01-01"}]}), encoding="utf-8")
+        with self.assertRaises(ValueError): load(self.path)
+
+    def test_duplicate_book_ids_are_rejected(self):
+        book = {"id": 1, "title": "书", "author": "作者", "pages": 10, "current_page": 0, "status": "想读", "rating": None, "notes": "", "added": "2024-01-01"}
+        self.path.write_text(json.dumps({"version": 1, "books": [book, {**book, "title": "另一本"}]}), encoding="utf-8")
+        with self.assertRaises(ValueError): load(self.path)
+
 if __name__ == "__main__": unittest.main()

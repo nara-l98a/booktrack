@@ -9,11 +9,37 @@ STATUSES = ("想读", "在读", "已读", "搁置")
 def data_path(value=None):
     return Path(value or os.environ.get("BOOKTRACK_DATA", "~/.booktrack.json")).expanduser()
 
+def _validate_book(book, seen_ids):
+    if not isinstance(book, dict):
+        raise ValueError("书籍记录必须是对象")
+    required = ("id", "title", "author", "pages", "current_page", "status", "rating", "notes", "added")
+    if any(key not in book for key in required):
+        raise ValueError("书籍记录缺少必要字段")
+    bid = book["id"]
+    if isinstance(bid, bool) or not isinstance(bid, int) or bid <= 0 or bid in seen_ids:
+        raise ValueError("书籍 ID 必须是唯一的正整数")
+    if not all(isinstance(book[key], str) and book[key].strip() for key in ("title", "author")):
+        raise ValueError("书名和作者必须是非空文本")
+    pages, current = book["pages"], book["current_page"]
+    if any(isinstance(value, bool) or not isinstance(value, int) for value in (pages, current)) or pages <= 0 or not 0 <= current <= pages:
+        raise ValueError("页数或当前页无效")
+    if book["status"] not in STATUSES:
+        raise ValueError("书籍状态无效")
+    rating_value = book["rating"]
+    if rating_value is not None and (isinstance(rating_value, bool) or not isinstance(rating_value, int) or not 1 <= rating_value <= 5):
+        raise ValueError("评分无效")
+    if not isinstance(book["notes"], str) or not isinstance(book["added"], str):
+        raise ValueError("笔记和添加日期必须是文本")
+    seen_ids.add(bid)
+
 def load(path: Path) -> dict:
     if not path.exists(): return {"version": 1, "books": []}
     try:
         obj = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(obj, dict) or not isinstance(obj.get("books"), list): raise ValueError
+        seen_ids = set()
+        for book in obj["books"]:
+            _validate_book(book, seen_ids)
         return obj
     except (OSError, json.JSONDecodeError, ValueError) as e:
         raise ValueError(f"数据文件无效或无法读取：{path} ({e})")
