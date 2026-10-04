@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "books": [
+    {"id": 1, "title": "百年孤独", "author": "加西亚·马尔克斯", "pages": 360, "current_page": 72, "status": "在读", "rating": null, "notes": "关注家族时间循环的叙事结构。", "added": "2024-01-01"},
+    {"id": 2, "title": "小王子", "author": "安托万·德·圣埃克苏佩里", "pages": 96, "current_page": 96, "status": "已读", "rating": 5, "notes": "", "added": "2024-01-02"}
+  ]
+}

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "booktrack"
+version = "1.0.0"
+description = "中文命令行阅读进度与书单管理工具"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Booktrack contributors"}]
+license = {file = "LICENSE"}
+
+[project.scripts]
+booktrack = "booktrack.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
